@@ -11,4 +11,6 @@ public class UpdateMinistroDto {
     public String partido;
     public float salario;
     public Date dataSaida;
+    public String cpf;
+    public String password;
 }

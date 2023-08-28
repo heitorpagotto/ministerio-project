@@ -11,4 +11,6 @@ public class AddMinistroDto {
     public Date dataEntrada;
     public Date dataSaida;
     public float salario;
+    public String cpf;
+    public String password;
 }

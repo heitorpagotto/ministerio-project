@@ -15,5 +15,7 @@ public class Politico {
     public Date dataEntrada;
     public Date dataSaida;
     public String nome;
+    public String cpf;
+    public String password;
     public float salario;
 }

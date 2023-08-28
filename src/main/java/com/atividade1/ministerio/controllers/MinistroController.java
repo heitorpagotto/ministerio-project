@@ -45,7 +45,7 @@ public class MinistroController {
         }
     }
 
-    @PostMapping("update")
+    @PutMapping("update")
     public ResponseEntity<DefaultResponseDto<Integer>> add(@RequestBody UpdateMinistroDto request) {
         try {
             return ResponseEntity.ok().body(new DefaultResponseDto<>(_service.Update(request), "OK", "Success"));

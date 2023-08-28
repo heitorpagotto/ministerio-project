@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Secretaria {
-    public long Id;
+    public int Id;
     public String nome;
     public float orcamento;
     public int totalFuncionarios;
