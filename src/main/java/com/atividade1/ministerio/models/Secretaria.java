@@ -12,5 +12,6 @@ public class Secretaria {
     public String nome;
     public float orcamento;
     public int totalFuncionarios;
+    public int idMinisterio;
     public Ministerio ministerio;
 }

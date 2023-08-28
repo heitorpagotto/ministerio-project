@@ -27,6 +27,8 @@ public class SecretariaService {
         Ministerio ministerio = _ministerioDao.GetById(id);
         if (ministerio == null)
             throw new Exception("Ministério não econtrado");
+        if (ministerio.getSecretarias() == null)
+            throw new Exception("Ministério não possuí secretarias.");
 
         return ministerio.getSecretarias().stream().toList();
     }
@@ -36,6 +38,12 @@ public class SecretariaService {
 
         if (secretaria == null)
             throw new Exception("Secretaria não encontrada");
+
+        Ministerio ministerio = _ministerioDao.GetById(secretaria.getIdMinisterio());
+
+        ministerio.setSecretarias(null);
+
+        secretaria.setMinisterio(ministerio);
 
         return secretaria;
     }
@@ -53,8 +61,12 @@ public class SecretariaService {
         secretaria.setNome(request.getNome());
         secretaria.setOrcamento(request.getOrcamento());
         secretaria.setTotalFuncionarios(request.getTotalFuncionarios());
+        secretaria.setIdMinisterio(request.getIdMinisterio());
 
         ArrayList<Secretaria> ministerioSecretarias = ministerio.getSecretarias();
+
+        if (ministerioSecretarias == null)
+            ministerioSecretarias = new ArrayList<>();
 
         float orcamentoSum = ministerioSecretarias.stream()
                 .map(Secretaria::getOrcamento)
@@ -63,13 +75,11 @@ public class SecretariaService {
         if (orcamentoSum + secretaria.getOrcamento() > ministerio.getOrcamento())
             throw new Exception("Máximo orçamento já atingido");
 
-        ministerioSecretarias.add(secretaria.getId(), secretaria);
+        ministerioSecretarias.add(secretaria);
 
         ministerio.setSecretarias(ministerioSecretarias);
 
         _ministerioDao.Update(ministerio);
-        ministerio.setSecretarias(null);
-        secretaria.setMinisterio(ministerio);
         _dao.Add(secretaria);
 
         return newId;
@@ -81,30 +91,33 @@ public class SecretariaService {
         if (secretaria == null)
             throw new Exception("Secretaria não encontrada");
 
-        Ministerio ministerio = _ministerioDao.GetById(secretaria.getMinisterio().getId());
+        Ministerio ministerio = _ministerioDao.GetById(secretaria.getIdMinisterio());
         if (ministerio == null)
             throw new Exception("Ministério não encontrado");
 
         secretaria.setNome(request.getNome());
-        secretaria.setOrcamento(request.getOrcamento());
         secretaria.setTotalFuncionarios(request.getTotalFuncionarios());
 
         ArrayList<Secretaria> ministerioSecretarias = ministerio.getSecretarias();
 
+        if (ministerioSecretarias == null)
+            ministerioSecretarias = new ArrayList<>();
+
         float orcamentoSum = ministerioSecretarias.stream()
-                .map(Secretaria::getOrcamento)
+                .map(s -> s.getOrcamento() - secretaria.getOrcamento())
                 .reduce(0f, Float::sum);
 
-        if (orcamentoSum + secretaria.getOrcamento() > ministerio.getOrcamento())
+        if (orcamentoSum + request.getOrcamento() > ministerio.getOrcamento())
             throw new Exception("Máximo orçamento já atingido");
 
-        ministerioSecretarias.remove(secretaria.getId());
-        ministerioSecretarias.add(secretaria.getId(), secretaria);
+        secretaria.setOrcamento(request.getOrcamento());
+
+        ministerioSecretarias.remove(secretaria);
+        ministerioSecretarias.add(secretaria);
 
         ministerio.setSecretarias(ministerioSecretarias);
 
         _ministerioDao.Update(ministerio);
-
         _dao.Update(secretaria);
 
         return secretaria.getId();
@@ -115,14 +128,18 @@ public class SecretariaService {
         if (secretaria == null)
             throw new Exception("Secretaria não encontrada");
 
-        Ministerio ministerio = _ministerioDao.GetById(secretaria.getMinisterio().getId());
+        Ministerio ministerio = _ministerioDao.GetById(secretaria.getIdMinisterio());
 
         if (ministerio == null)
             throw new Exception("Ministério não encontrado");
 
         ArrayList<Secretaria> ministerioSecretarias = ministerio.getSecretarias();
 
-        ministerioSecretarias.remove(id);
+        if (ministerioSecretarias != null) {
+            ministerioSecretarias.remove(secretaria);
+        } else {
+            ministerioSecretarias = new ArrayList<>();
+        }
 
         ministerio.setSecretarias(ministerioSecretarias);
 

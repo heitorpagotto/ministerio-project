@@ -2,10 +2,7 @@ package com.atividade1.ministerio.dao;
 
 import com.atividade1.ministerio.models.Presidente;
 
-import java.util.Date;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TreeMap;
+import java.util.*;
 
 public class PresidenteDao {
     private static volatile PresidenteDao instance;
@@ -23,8 +20,8 @@ public class PresidenteDao {
         president.setVerbaPresidencial(200000000);
         president.setPassword("123456");
         president.setSalario(30000);
-        president.setDataEntrada(new Date("2023-01-01"));
-        president.setDataSaida(new Date("2027-01-01"));
+        president.setDataEntrada(new GregorianCalendar(2023, Calendar.JANUARY, 1).getTime());
+        president.setDataSaida(new GregorianCalendar(2027, Calendar.JANUARY, 1).getTime());
 
         this.presidente.put(president.getId(), president);
     }
@@ -40,7 +37,7 @@ public class PresidenteDao {
     public Presidente GetByCpf(String cpf) {
         Optional<Presidente> president = presidente.values().stream().filter(v -> v.getCpf().equals(cpf)).findFirst();
 
-        return president.get();
+        return president.orElse(null);
     }
 
     public Presidente GetById(int id) {
@@ -50,7 +47,7 @@ public class PresidenteDao {
     public Presidente GetCurrentPresident(Date currentDate) {
         Optional<Presidente> president = presidente.values().stream().filter(v -> v.getDataEntrada().compareTo(currentDate) <= 0 && v.getDataSaida().compareTo(currentDate) > 0).findFirst();
 
-        return president.get();
+        return president.orElse(null);
     }
 
     public int Update(Presidente presidente) {

@@ -1,5 +1,6 @@
 package com.atividade1.ministerio.services;
 
+import com.atividade1.ministerio.dao.MinisterioDao;
 import com.atividade1.ministerio.dao.MinistroDao;
 import com.atividade1.ministerio.dto.ministro.AddMinistroDto;
 import com.atividade1.ministerio.dto.ministro.UpdateMinistroDto;
@@ -9,13 +10,24 @@ import java.util.List;
 
 public class MinistroService {
     private final MinistroDao _dao;
+    private final MinisterioDao _ministerioDao;
 
     public MinistroService() {
         _dao = MinistroDao.getInstance();
+        _ministerioDao = MinisterioDao.getInstance();
     }
 
     public List<Ministro> ListAll() {
-        return _dao.ListAll();
+        List<Ministro> ministros = _dao.ListAll();
+
+        ministros.forEach(m -> {
+            m.setPassword(null);
+            m.setMinisterio(_ministerioDao.GetById(m.getIdMinisterio()));
+            if (m.getMinisterio() != null)
+                m.getMinisterio().setMinistro(null);
+        });
+
+        return ministros;
     }
 
     public Ministro GetById(int id) throws Exception {
@@ -23,6 +35,11 @@ public class MinistroService {
 
         if (ministro == null)
             throw new Exception("Ministro não encontrado");
+
+        ministro.setPassword(null);
+        ministro.setMinisterio(_ministerioDao.GetById(ministro.getIdMinisterio()));
+        if (ministro.getMinisterio() != null)
+            ministro.getMinisterio().setMinistro(null);
 
         return ministro;
     }
@@ -32,6 +49,8 @@ public class MinistroService {
 
         if (ministro == null)
             throw new Exception("Ministro não encontrado");
+
+        _ministerioDao.Delete(ministro.getIdMinisterio());
 
         _dao.Delete(id);
 
@@ -47,9 +66,11 @@ public class MinistroService {
         if (request.getDataSaida().compareTo(ministro.getDataEntrada()) < 0)
             throw new Exception("Data de saída não pode ser menor que Data de entrada.");
 
-        var existingMinistro = _dao.GetByCpf(request.getCpf());
-        if (existingMinistro != null)
-            throw new Exception("Ministro já cadastrado.");
+        if (!ministro.getCpf().equals(request.getCpf())) {
+            var existingMinistro = _dao.GetByCpf(request.getCpf());
+            if (existingMinistro != null)
+                throw new Exception("Ministro já cadastrado.");
+        }
 
         ministro.setDataSaida(request.getDataSaida());
         ministro.setNome(request.getNome());
@@ -57,7 +78,6 @@ public class MinistroService {
         ministro.setPartido(request.getPartido());
         ministro.setCpf(request.getCpf());
         ministro.setPassword(request.getPassword());
-
 
         return _dao.Update(ministro);
     }
@@ -77,7 +97,6 @@ public class MinistroService {
         ministroToInsert.setDataSaida(request.getDataSaida());
 
         var existingMinistro = _dao.GetByCpf(request.getCpf());
-
         if (existingMinistro != null)
             throw new Exception("Ministro já cadastrado.");
         if (request.getDataSaida().compareTo(request.getDataEntrada()) < 0)

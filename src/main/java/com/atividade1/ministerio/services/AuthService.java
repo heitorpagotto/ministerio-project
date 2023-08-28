@@ -19,14 +19,16 @@ public class AuthService {
 
     public UserResponseDto Login(AuthDto request) throws Exception {
         Presidente presidente = _presidenteDao.GetByCpf(request.cpf);
-        Ministro ministro = _ministroDao.GetByCpf(request.cpf);
 
         if (presidente != null && presidente.getPassword().equals(request.password)) {
             return new UserResponseDto(presidente.getId(), presidente.getPartido(), presidente.getDataEntrada(), presidente.getDataSaida(), presidente.getNome(), presidente.getCpf(), presidente.getSalario(), EUserType.Presidente);
-        } else if (ministro != null && ministro.getPassword().equals(request.password)) {
-            return new UserResponseDto(ministro.getId(), ministro.getPartido(), ministro.getDataEntrada(), ministro.getDataSaida(), ministro.getNome(), ministro.getCpf(), ministro.getSalario(), EUserType.Ministro);
         } else {
-            throw new Exception("Usuário inválido");
+            Ministro ministro = _ministroDao.GetByCpf(request.cpf);
+            if (ministro != null && ministro.getPassword().equals(request.password)) {
+                return new UserResponseDto(ministro.getId(), ministro.getPartido(), ministro.getDataEntrada(), ministro.getDataSaida(), ministro.getNome(), ministro.getCpf(), ministro.getSalario(), EUserType.Ministro);
+            } else {
+                throw new Exception("Usuário inválido");
+            }
         }
     }
 }

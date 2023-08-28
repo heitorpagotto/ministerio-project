@@ -26,7 +26,9 @@ public class MinisterioService {
     public List<Ministerio> ListAll() {
         List<Ministerio> ministerios = _dao.ListAll();
         ministerios.forEach(x -> {
-            x.getMinistro().setMinisterio(null);
+            x.setMinistro(_ministroDao.GetById(x.getIdMinistro()));
+            if (x.getMinistro() != null)
+                x.getMinistro().setMinisterio(null);
         });
 
         return ministerios;
@@ -38,7 +40,9 @@ public class MinisterioService {
         if (ministerio == null)
             throw new Exception("Ministerio não encontrado");
 
-        ministerio.getMinistro().setMinisterio(null);
+        ministerio.setMinistro(_ministroDao.GetById(ministerio.getIdMinistro()));
+        if (ministerio.getMinistro() != null)
+            ministerio.getMinistro().setMinisterio(null);
 
         return ministerio;
     }
@@ -54,10 +58,10 @@ public class MinisterioService {
         Ministro ministro = _ministroDao.GetById(request.getIdMinistro());
         if (ministro == null)
             throw new Exception("Ministro não encontrado.");
-        if (ministro.getMinisterio() != null)
+        if (ministro.getIdMinisterio() != 0)
             throw new Exception("Ministro já gerencia um ministério.");
 
-        ministerio.setMinistro(ministro);
+        ministerio.setIdMinistro(ministro.getId());
         ministerio.setOrcamento(request.getOrcamento());
         ministerio.setTotalFuncionarios(request.getTotalFuncionarios());
 
@@ -72,7 +76,7 @@ public class MinisterioService {
 
         _dao.Add(ministerio);
 
-        ministro.setMinisterio(ministerio);
+        ministro.setIdMinisterio(ministerio.getId());
         _ministroDao.Update(ministro);
 
         return newId;
@@ -84,28 +88,31 @@ public class MinisterioService {
         if (ministerio == null)
             throw new Exception("Ministério não encontrado");
 
-        if (request.getIdMinistro() != ministerio.getMinistro().getId()) {
+        if (request.getIdMinistro() != ministerio.getIdMinistro()) {
             Ministro ministro = _ministroDao.GetById(request.getIdMinistro());
-            if (ministro == null)
+            Ministro previousMinistro = _ministroDao.GetById(ministerio.getIdMinistro());
+            if (ministro == null || previousMinistro == null)
                 throw new Exception("Ministro não encontrado");
 
-            ministro.setMinisterio(null);
-            ministerio.setMinistro(ministro);
-
+            ministerio.setIdMinistro(ministro.getId());
+            ministro.setIdMinisterio(ministerio.getId());
+            previousMinistro.setIdMinisterio(0);
             _ministroDao.Update(ministro);
+            _ministroDao.Update(previousMinistro);
         }
         ministerio.setNome(request.getNome());
-        ministerio.setOrcamento(request.getOrcamento());
         ministerio.setTotalFuncionarios(request.getTotalFuncionarios());
 
         Presidente president = _presidenteDao.GetCurrentPresident(new Date());
 
         float orcamentoSum = _dao.ListAll().stream()
-                .map(Ministerio::getOrcamento)
+                .map(m -> m.getOrcamento() - ministerio.getOrcamento())
                 .reduce(0f, Float::sum);
 
-        if (orcamentoSum + ministerio.getOrcamento() > president.getVerbaPresidencial())
+        if (orcamentoSum + request.getOrcamento() > president.getVerbaPresidencial())
             throw new Exception("Verba presidencial excedida.");
+
+        ministerio.setOrcamento(request.getOrcamento());
 
         _dao.Update(ministerio);
 
@@ -118,6 +125,13 @@ public class MinisterioService {
         if (ministerio == null)
             throw new Exception("Ministério não encontrado");
 
+        Ministro ministro = _ministroDao.GetById(ministerio.getIdMinistro());
+        if (ministro == null)
+            throw new Exception("Ministro não encontrado");
+
+        ministro.setIdMinisterio(0);
+
+        _ministroDao.Update(ministro);
         _dao.Delete(id);
 
         return id;

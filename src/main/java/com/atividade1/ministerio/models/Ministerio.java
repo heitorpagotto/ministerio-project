@@ -10,6 +10,7 @@ import java.util.ArrayList;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Ministerio {
+    public int idMinistro;
     private int id;
     private String nome;
     private float orcamento;
