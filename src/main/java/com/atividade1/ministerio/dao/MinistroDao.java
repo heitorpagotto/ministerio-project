@@ -2,11 +2,9 @@ package com.atividade1.ministerio.dao;
 
 import com.atividade1.ministerio.models.Ministerio;
 import com.atividade1.ministerio.models.Ministro;
+import com.atividade1.ministerio.models.Presidente;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class MinistroDao {
     private Map<Integer, Ministro> ministros;
@@ -24,6 +22,11 @@ public class MinistroDao {
         return instance;
     }
 
+    public Ministro GetByCpf(String cpf) {
+        Optional<Ministro> minister = ministros.values().stream().filter(v->v.getCpf().equals(cpf)).findFirst();
+
+        return minister.get();
+    }
     public Ministro GetById(int id) {
         return ministros.get(id);
     }

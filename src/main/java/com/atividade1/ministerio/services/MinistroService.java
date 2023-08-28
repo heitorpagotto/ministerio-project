@@ -1,7 +1,6 @@
 package com.atividade1.ministerio.services;
 
 import com.atividade1.ministerio.dao.MinistroDao;
-import com.atividade1.ministerio.dao.MinistroDao;
 import com.atividade1.ministerio.dto.ministro.AddMinistroDto;
 import com.atividade1.ministerio.dto.ministro.UpdateMinistroDto;
 import com.atividade1.ministerio.models.Ministro;
@@ -48,11 +47,16 @@ public class MinistroService {
         if (request.getDataSaida().compareTo(ministro.getDataEntrada()) < 0)
             throw new Exception("Data de saída não pode ser menor que Data de entrada.");
 
+        var existingMinistro = _dao.GetByCpf(request.getCpf());
+        if (existingMinistro != null)
+            throw new Exception("Ministro já cadastrado.");
+
         ministro.setDataSaida(request.getDataSaida());
         ministro.setNome(request.getNome());
         ministro.setSalario(request.getSalario());
         ministro.setPartido(request.getPartido());
-
+        ministro.setCpf(request.getCpf());
+        ministro.setPassword(request.getPassword());
 
 
         return _dao.Update(ministro);
@@ -65,11 +69,17 @@ public class MinistroService {
 
         ministroToInsert.setId(newId);
         ministroToInsert.setNome(request.getNome());
+        ministroToInsert.setCpf(request.getCpf());
+        ministroToInsert.setPassword(request.getPassword());
         ministroToInsert.setPartido(request.getPartido());
         ministroToInsert.setSalario(request.getSalario());
         ministroToInsert.setDataEntrada(request.getDataEntrada());
         ministroToInsert.setDataSaida(request.getDataSaida());
 
+        var existingMinistro = _dao.GetByCpf(request.getCpf());
+
+        if (existingMinistro != null)
+            throw new Exception("Ministro já cadastrado.");
         if (request.getDataSaida().compareTo(request.getDataEntrada()) < 0)
             throw new Exception("Data de saída não pode ser menor que Data de entrada.");
 

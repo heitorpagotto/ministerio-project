@@ -8,10 +8,18 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class MinisterioDao {
-    private Map<Integer, Ministerio> ministerios;
+    private static volatile MinisterioDao instance;
+    private final Map<Integer, Ministerio> ministerios;
 
     public MinisterioDao() {
         this.ministerios = new TreeMap<>();
+    }
+
+    public static MinisterioDao getInstance() {
+        if (instance == null) {
+            instance = new MinisterioDao();
+        }
+        return instance;
     }
 
     public Ministerio GetById(int id) {

@@ -1,17 +1,15 @@
 package com.atividade1.ministerio.dao;
 
-import com.atividade1.ministerio.models.Ministro;
 import com.atividade1.ministerio.models.Presidente;
 
-import java.time.LocalDate;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
 
 public class PresidenteDao {
-    private Map<Integer, Presidente> presidente;
     private static volatile PresidenteDao instance;
+    private final Map<Integer, Presidente> presidente;
 
     public PresidenteDao() {
         this.presidente = new TreeMap<>();
@@ -32,7 +30,7 @@ public class PresidenteDao {
     }
 
     public static PresidenteDao getInstance() {
-        if (instance == null ) {
+        if (instance == null) {
             instance = new PresidenteDao();
         }
 
@@ -40,13 +38,19 @@ public class PresidenteDao {
     }
 
     public Presidente GetByCpf(String cpf) {
-        Optional<Presidente> president = presidente.values().stream().filter(v->v.getCpf().equals(cpf)).findFirst();
+        Optional<Presidente> president = presidente.values().stream().filter(v -> v.getCpf().equals(cpf)).findFirst();
 
         return president.get();
     }
 
     public Presidente GetById(int id) {
         return presidente.get(id);
+    }
+
+    public Presidente GetCurrentPresident(Date currentDate) {
+        Optional<Presidente> president = presidente.values().stream().filter(v -> v.getDataEntrada().compareTo(currentDate) <= 0 && v.getDataSaida().compareTo(currentDate) > 0).findFirst();
+
+        return president.get();
     }
 
     public int Update(Presidente presidente) {

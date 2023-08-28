@@ -1,22 +1,26 @@
 package com.atividade1.ministerio.services;
 
 import com.atividade1.ministerio.dao.MinisterioDao;
-import com.atividade1.ministerio.dao.MinisterioDao;
 import com.atividade1.ministerio.dao.MinistroDao;
+import com.atividade1.ministerio.dao.PresidenteDao;
 import com.atividade1.ministerio.dto.ministerio.AddMinisterioDto;
 import com.atividade1.ministerio.dto.ministerio.UpdateMinisterioDto;
 import com.atividade1.ministerio.models.Ministerio;
 import com.atividade1.ministerio.models.Ministro;
+import com.atividade1.ministerio.models.Presidente;
 
+import java.util.Date;
 import java.util.List;
 
 public class MinisterioService {
     private final MinisterioDao _dao;
     private final MinistroDao _ministroDao;
+    private final PresidenteDao _presidenteDao;
 
     public MinisterioService() {
-        _dao = new MinisterioDao();
+        _dao = MinisterioDao.getInstance();
         _ministroDao = MinistroDao.getInstance();
+        _presidenteDao = PresidenteDao.getInstance();
     }
 
     public List<Ministerio> ListAll() {
@@ -57,6 +61,15 @@ public class MinisterioService {
         ministerio.setOrcamento(request.getOrcamento());
         ministerio.setTotalFuncionarios(request.getTotalFuncionarios());
 
+        Presidente president = _presidenteDao.GetCurrentPresident(new Date());
+
+        float orcamentoSum = _dao.ListAll().stream()
+                .map(Ministerio::getOrcamento)
+                .reduce(0f, Float::sum);
+
+        if (orcamentoSum + ministerio.getOrcamento() > president.getVerbaPresidencial())
+            throw new Exception("Verba presidencial excedida.");
+
         _dao.Add(ministerio);
 
         ministro.setMinisterio(ministerio);
@@ -84,6 +97,15 @@ public class MinisterioService {
         ministerio.setNome(request.getNome());
         ministerio.setOrcamento(request.getOrcamento());
         ministerio.setTotalFuncionarios(request.getTotalFuncionarios());
+
+        Presidente president = _presidenteDao.GetCurrentPresident(new Date());
+
+        float orcamentoSum = _dao.ListAll().stream()
+                .map(Ministerio::getOrcamento)
+                .reduce(0f, Float::sum);
+
+        if (orcamentoSum + ministerio.getOrcamento() > president.getVerbaPresidencial())
+            throw new Exception("Verba presidencial excedida.");
 
         _dao.Update(ministerio);
 
